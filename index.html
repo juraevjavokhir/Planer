@@ -2,409 +2,995 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#e9eaee">
 <title>Мой день в одной странице</title>
 <style>
-  :root{
-    --bg:#f4f5fb;
-    --bg-accent:#e8ebff;
-    --card:#ffffff;
-    --text:#1b1d27;
-    --muted:#7a7f95;
-    --line:#e6e8f2;
-    --accent:#5b5bd6;
-    --accent-soft:#ececfb;
-    --done:#22a06b;
-    --danger:#e2564a;
-    --shadow:0 2px 4px rgba(27,29,39,.04), 0 12px 32px rgba(27,29,39,.07);
-    --radius:16px;
-  }
-  :root[data-theme="dark"]{
-    --bg:#101219;
-    --bg-accent:#171a26;
-    --card:#191c27;
-    --text:#eceef7;
-    --muted:#8b90a6;
-    --line:#262a38;
-    --accent:#8b8bf0;
-    --accent-soft:#232541;
-    --done:#3ecf8e;
-    --danger:#f0776b;
-    --shadow:0 2px 4px rgba(0,0,0,.2), 0 12px 32px rgba(0,0,0,.35);
-  }
+:root{
+  --bg:#e9eaee;
+  --card:#ffffff;
+  --surface:#fdfdfd;
+  --ink:#141518;
+  --muted:#9b9dab;
+  --line:#eef0f3;
+  --track:#edeef2;
+  --coral:#f4613d;
+  --pink:#ffa0c3;
+  --btn-bg:#17181c;
+  --btn-fg:#ffffff;
+  --shadow:0 1px 2px rgba(20,21,24,.04), 0 8px 24px rgba(20,21,24,.06);
+}
+:root[data-theme="dark"]{
+  --bg:#0b0c0f;
+  --card:#181a20;
+  --surface:#131419;
+  --ink:#f1f2f6;
+  --muted:#7e8293;
+  --line:#23262e;
+  --track:#262931;
+  --btn-bg:#f1f2f6;
+  --btn-fg:#17181c;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .3s ease;
+}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+h1,h2,h3,p{margin:0}
 
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-    background:linear-gradient(180deg,var(--bg-accent),var(--bg) 320px);
-    color:var(--text);
-    -webkit-font-smoothing:antialiased;
-    transition:background-color .25s ease,color .25s ease;
-  }
-  .wrap{max-width:720px;margin:0 auto;padding:32px 16px 80px}
+/* ---------- каркас телефона ---------- */
+.app{
+  position:relative;display:flex;flex-direction:column;overflow:hidden;
+  width:100%;max-width:430px;margin:0 auto;min-height:100dvh;
+  background:var(--surface);
+}
+@media(min-width:540px){
+  body{display:grid;place-items:center;padding:24px 0}
+  .app{height:min(920px,calc(100dvh - 48px));min-height:0;border-radius:46px;
+       box-shadow:0 30px 70px rgba(20,21,24,.18), 0 2px 8px rgba(20,21,24,.08)}
+}
 
-  /* --- Шапка --- */
-  header{margin-bottom:22px}
-  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-  h1{font-size:26px;line-height:1.2;margin:0 0 6px;letter-spacing:-.02em}
-  .date{color:var(--muted);font-size:15px;margin:0}
-  .icon-btn{
-    width:40px;height:40px;flex:none;display:grid;place-items:center;
-    border:1px solid var(--line);background:var(--card);color:var(--text);
-    border-radius:12px;cursor:pointer;font-size:17px;
-    transition:transform .15s ease,border-color .15s ease,background-color .15s ease;
-  }
-  .icon-btn:hover{transform:translateY(-1px);border-color:var(--accent)}
-  .icon-btn:active{transform:translateY(0) scale(.96)}
+/* статус-бар */
+.statusbar{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 26px 4px;font-size:15px;font-weight:600;letter-spacing:-.01em;flex:none}
+.statusbar .icons{display:flex;gap:6px;align-items:center;opacity:.9}
 
-  /* --- Прогресс --- */
-  .progress-card{
-    margin-top:18px;background:var(--card);border:1px solid var(--line);
-    border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);
-  }
-  .progress-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-  .progress-head b{font-size:15px;font-weight:600}
-  .progress-head span{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
-  .bar{height:8px;border-radius:99px;background:var(--accent-soft);overflow:hidden}
-  .bar i{
-    display:block;height:100%;width:0;border-radius:99px;
-    background:linear-gradient(90deg,var(--accent),var(--done));
-    transition:width .5s cubic-bezier(.4,0,.2,1);
-  }
+.screens{position:relative;flex:1;overflow:hidden}
+.screen{
+  position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
+  padding:8px 22px 120px;
+  opacity:0;visibility:hidden;transform:translateY(10px) scale(.99);
+  transition:opacity .28s ease,transform .32s cubic-bezier(.22,.9,.3,1),visibility .28s;
+}
+.screen.active{opacity:1;visibility:visible;transform:none}
+.screen::-webkit-scrollbar{width:0}
 
-  /* --- Добавление --- */
-  form{
-    display:flex;gap:8px;margin:20px 0 8px;background:var(--card);
-    border:1px solid var(--line);border-radius:var(--radius);
-    padding:8px;box-shadow:var(--shadow);
-  }
-  input[type="time"],input[type="text"]{
-    font:inherit;color:var(--text);background:transparent;border:0;outline:0;padding:10px;border-radius:10px;
-  }
-  input[type="time"]{width:112px;flex:none;border-right:1px solid var(--line);color:var(--muted);font-variant-numeric:tabular-nums}
-  input[type="text"]{flex:1;min-width:0}
-  input::placeholder{color:var(--muted)}
-  .add{
-    flex:none;border:0;border-radius:11px;background:var(--accent);color:#fff;
-    font:600 15px/1 inherit;padding:0 18px;cursor:pointer;
-    transition:transform .15s ease,opacity .15s ease;
-  }
-  .add:hover{opacity:.9}
-  .add:active{transform:scale(.96)}
+/* ---------- шапка ---------- */
+.head{display:flex;align-items:center;justify-content:space-between;margin:8px 0 18px}
+.head h1{font-size:23px;font-weight:700;letter-spacing:-.03em}
+.bell{width:34px;height:34px;display:grid;place-items:center;position:relative}
+.bell::after{content:"";position:absolute;top:4px;right:5px;width:7px;height:7px;border-radius:50%;
+  background:var(--coral);border:2px solid var(--surface);opacity:0;transition:opacity .2s}
+.bell.has::after{opacity:1}
 
-  /* --- Фильтры --- */
-  .filters{display:flex;gap:6px;margin:16px 0 8px;flex-wrap:wrap}
-  .chip{
-    border:1px solid var(--line);background:var(--card);color:var(--muted);
-    padding:7px 14px;border-radius:99px;font-size:14px;cursor:pointer;
-    transition:all .18s ease;
-  }
-  .chip:hover{color:var(--text)}
-  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+/* ---------- полоса недели ---------- */
+.week{display:flex;justify-content:space-between;gap:4px;margin-bottom:22px}
+.day{flex:1;display:flex;flex-direction:column;align-items:center;gap:9px;padding:0;position:relative}
+.day .dw{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.day .dn{
+  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  font-size:15px;font-weight:600;border:1px solid var(--line);background:var(--card);
+  transition:transform .2s cubic-bezier(.2,.9,.3,1),background-color .2s ease,color .2s ease,border-color .2s;
+}
+.day:active .dn{transform:scale(.9)}
+.day.on .dn{background:var(--coral);border-color:var(--coral);color:#fff;box-shadow:0 6px 16px rgba(244,97,61,.35)}
+.day.today:not(.on) .dn{border-color:var(--coral);color:var(--coral)}
+.day .dot{position:absolute;bottom:-7px;width:4px;height:4px;border-radius:50%;background:var(--coral);opacity:0;transition:opacity .2s}
+.day.has .dot{opacity:.55}
+.day.on .dot{opacity:0}
 
-  /* --- Список --- */
-  .group-title{
-    display:flex;align-items:center;gap:8px;
-    margin:24px 0 10px;font-size:13px;font-weight:600;
-    text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
-  }
-  .group-title::after{content:"";flex:1;height:1px;background:var(--line)}
+/* ---------- карточка статистики ---------- */
+.stat{
+  position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);
+  border-radius:20px;padding:20px;box-shadow:var(--shadow);margin-bottom:26px;
+}
+.stat h2{font-size:19px;font-weight:700;letter-spacing:-.02em;margin-bottom:5px}
+.stat p{font-size:13.5px;color:var(--muted);max-width:60%}
+.stat .glow{position:absolute;right:-40px;top:-30px;width:230px;height:190px;pointer-events:none;
+  background:radial-gradient(120px 100px at 70% 40%, rgba(255,160,195,.55), rgba(244,97,61,.22) 55%, transparent 72%)}
+.mini{position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(-7deg);
+  width:92px;height:72px;border-radius:11px;background:var(--card);
+  box-shadow:0 6px 18px rgba(20,21,24,.12);padding:11px 10px;display:flex;flex-direction:column;gap:7px}
+.mini i{display:block;height:5px;border-radius:3px;background:var(--track)}
+.mini i:nth-child(1){width:70%}
+.mini i:nth-child(2){width:90%}
+.mini .r{display:flex;align-items:center;gap:6px;margin-top:2px}
+.mini .r b{width:13px;height:13px;border-radius:50%;flex:none;background:var(--coral);
+  display:grid;place-items:center}
+.mini .r b svg{width:7px;height:7px;stroke:#fff;stroke-width:3;fill:none}
+.mini .r s{flex:1;height:4px;border-radius:3px;background:var(--track);text-decoration:none}
+.mini .r.o b{background:transparent;border:2px solid var(--track)}
 
-  ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-  li{
-    display:flex;align-items:center;gap:12px;
-    background:var(--card);border:1px solid var(--line);border-radius:14px;
-    padding:12px 14px;box-shadow:0 1px 2px rgba(27,29,39,.03);
-    animation:in .3s cubic-bezier(.2,.8,.2,1) both;
-    transition:border-color .2s ease,transform .2s ease,opacity .25s ease;
-  }
-  li:hover{border-color:var(--accent)}
-  li.leaving{opacity:0;transform:translateX(24px)}
-  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* ---------- заголовок секции ---------- */
+.sec{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec span{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.sec button{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;transition:background-color .2s}
+.sec button:active{background:var(--track)}
+.sec button.on{color:var(--coral)}
 
-  .check{
-    width:24px;height:24px;flex:none;border-radius:8px;cursor:pointer;
-    border:2px solid var(--line);background:transparent;
-    display:grid;place-items:center;padding:0;
-    transition:all .2s ease;
-  }
-  .check:hover{border-color:var(--accent)}
-  .check svg{width:14px;height:14px;stroke:#fff;stroke-width:3;fill:none;
-    stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .25s ease .05s}
-  li.done .check{background:var(--done);border-color:var(--done)}
-  li.done .check svg{stroke-dashoffset:0}
+/* ---------- карточка задачи ---------- */
+.tasks{display:flex;flex-direction:column;gap:12px}
+.task{
+  display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);
+  border-radius:18px;padding:16px 16px 16px 0;box-shadow:var(--shadow);
+  animation:pop .35s cubic-bezier(.2,.9,.3,1) both;
+  transition:transform .2s cubic-bezier(.2,.9,.3,1),opacity .25s ease;
+}
+.task:active{transform:scale(.985)}
+.task.gone{opacity:0;transform:translateX(40px)}
+@keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.task .bar{width:4px;height:38px;border-radius:0 4px 4px 0;flex:none}
+.task .body{flex:1;min-width:0}
+.task h3{font-size:15.5px;font-weight:650;letter-spacing:-.01em;margin-bottom:6px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s}
+.task .meta{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.task .meta svg{width:13px;height:13px;flex:none}
+.task.done h3{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px}
+.task.done .bar{opacity:.35}
+.go{flex:none;background:var(--btn-bg);color:var(--btn-fg);border-radius:99px;
+  padding:9px 18px;font-size:13.5px;font-weight:600;transition:transform .18s ease,opacity .2s}
+.go:active{transform:scale(.93)}
+.go.ok{background:rgba(244,97,61,.12);color:var(--coral);display:grid;place-items:center;
+  width:38px;height:38px;padding:0;border-radius:50%}
+.go.ok svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.6;fill:none}
 
-  .time{
-    flex:none;font-size:13px;font-variant-numeric:tabular-nums;color:var(--accent);
-    background:var(--accent-soft);padding:4px 9px;border-radius:8px;font-weight:600;
-  }
-  .text{flex:1;min-width:0;font-size:16px;line-height:1.4;word-break:break-word;outline:0;border-radius:6px}
-  .text:focus{box-shadow:0 0 0 2px var(--accent)}
-  li.done .text{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1.5px}
-  li.done .time{opacity:.5}
+.empty{text-align:center;padding:46px 20px;color:var(--muted);font-size:14px;line-height:1.55}
+.empty b{display:block;font-size:30px;margin-bottom:10px}
 
-  .del{
-    flex:none;width:30px;height:30px;border:0;background:transparent;color:var(--muted);
-    border-radius:8px;cursor:pointer;font-size:18px;line-height:1;opacity:0;
-    transition:all .18s ease;
-  }
-  li:hover .del,li:focus-within .del{opacity:1}
-  .del:hover{background:var(--accent-soft);color:var(--danger)}
+/* ---------- экран фокуса ---------- */
+.chip{
+  display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+  border-radius:99px;padding:8px 8px 8px 8px;box-shadow:var(--shadow);margin:6px 0 26px;
+}
+.chip .ic{width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:linear-gradient(140deg,#ff9a5c,var(--coral));color:#fff}
+.chip .tx{flex:1;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip .tx s{text-decoration:none;color:var(--muted);font-weight:500}
+.chip .x{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:50%;
+  background:var(--track);transition:transform .18s}
+.chip .x:active{transform:scale(.9)}
 
-  .empty{text-align:center;color:var(--muted);padding:56px 20px;font-size:15px}
-  .empty div{font-size:34px;margin-bottom:10px}
+.ftitle{text-align:center;margin-bottom:26px}
+.ftitle h2{font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1.25}
+.ftitle p{font-size:14px;color:var(--muted);margin-top:6px;font-variant-numeric:tabular-nums}
 
-  footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:28px;flex-wrap:wrap}
-  .link{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;cursor:pointer;padding:6px 0}
-  .link:hover{color:var(--danger)}
-  .hint{color:var(--muted);font-size:13px}
+.dial{position:relative;width:min(260px,72vw);margin:0 auto 30px;aspect-ratio:1}
+.dial svg{width:100%;height:100%;display:block;overflow:visible}
+.dial .track-c{fill:none;stroke:var(--track);stroke-width:15}
+.dial .prog{fill:none;stroke:url(#grad);stroke-width:15;stroke-linecap:round;
+  transform:rotate(-90deg);transform-origin:130px 130px;
+  transition:stroke-dashoffset .25s linear}
+.dial .knob{transform-origin:130px 130px;transition:transform .25s linear}
+.dial .knob circle{fill:#fff;filter:drop-shadow(0 2px 6px rgba(244,97,61,.5))}
+:root[data-theme="dark"] .dial .knob circle{fill:#fff}
+.dial .mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.dial .time{font-size:44px;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.plus{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 14px;
+  font-size:13px;font-weight:600;color:var(--muted);box-shadow:var(--shadow);transition:transform .18s,color .2s}
+.plus:active{transform:scale(.92)}
+.plus:hover{color:var(--coral)}
 
-  @media (max-width:520px){
-    .wrap{padding:22px 12px 60px}
-    h1{font-size:22px}
-    form{flex-wrap:wrap}
-    input[type="time"]{border-right:0;width:100px}
-    input[type="text"]{width:100%;order:3}
-    .del{opacity:1}
-  }
+.subs{display:flex;flex-direction:column;gap:2px;margin-bottom:22px}
+.sub{display:flex;align-items:center;gap:14px;padding:11px 2px;border-radius:12px;transition:background-color .2s}
+.sub:active{background:var(--track)}
+.sub .c{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid var(--track);
+  display:grid;place-items:center;transition:all .22s cubic-bezier(.2,.9,.3,1)}
+.sub .c svg{width:11px;height:11px;stroke:#fff;stroke-width:3;fill:none;
+  stroke-dasharray:18;stroke-dashoffset:18;transition:stroke-dashoffset .25s ease .05s}
+.sub.on .c{background:rgba(244,97,61,.85);border-color:transparent}
+.sub.on .c svg{stroke-dashoffset:0}
+.sub span{flex:1;font-size:15px;transition:color .2s}
+.sub.on span{color:var(--muted);text-decoration:line-through}
+.sub .rm{opacity:0;color:var(--muted);font-size:18px;line-height:1;padding:4px 6px;transition:opacity .2s}
+.sub:hover .rm{opacity:1}
+.addsub{display:flex;align-items:center;gap:14px;padding:10px 2px;color:var(--muted);font-size:14px}
+.addsub input{flex:1;border:0;outline:0;background:transparent;font:inherit;color:var(--ink);padding:2px 0}
+.addsub .c{width:22px;height:22px;border-radius:50%;border:2px dashed var(--track);flex:none}
+
+.bigbtn{display:flex;align-items:center;justify-content:center;gap:9px;margin:0 auto 14px;
+  background:var(--btn-bg);color:var(--btn-fg);border-radius:99px;padding:15px 40px;
+  font-size:16px;font-weight:650;box-shadow:0 10px 24px rgba(20,21,24,.18);
+  transition:transform .18s cubic-bezier(.2,.9,.3,1)}
+.bigbtn:active{transform:scale(.95)}
+.bigbtn svg{width:19px;height:19px}
+.frow{display:flex;justify-content:center;gap:22px;padding-bottom:10px}
+.frow button{font-size:13.5px;color:var(--muted);padding:6px}
+.frow button:hover{color:var(--coral)}
+
+/* ---------- календарь ---------- */
+.mhead{display:flex;align-items:center;justify-content:space-between;margin:8px 0 20px}
+.mhead h2{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.mhead button{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  border:1px solid var(--line);background:var(--card)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.grid .wd{text-align:center;font-size:11px;font-weight:600;color:var(--muted);padding-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+.cell{aspect-ratio:1;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  font-size:14px;font-weight:600;background:var(--card);border:1px solid var(--line);
+  transition:transform .18s,background-color .2s}
+.cell:active{transform:scale(.92)}
+.cell.void{background:transparent;border-color:transparent;color:transparent;pointer-events:none}
+.cell.on{background:var(--coral);border-color:var(--coral);color:#fff}
+.cell.tdy:not(.on){border-color:var(--coral);color:var(--coral)}
+.cell u{width:4px;height:4px;border-radius:50%;background:var(--coral);opacity:0;text-decoration:none}
+.cell.has u{opacity:.6}
+.cell.on u{background:#fff;opacity:.9}
+
+/* ---------- профиль ---------- */
+.prof{display:flex;flex-direction:column;align-items:center;gap:6px;margin:18px 0 26px}
+.ava{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  font-size:27px;font-weight:700;background:linear-gradient(140deg,var(--pink),var(--coral));
+  box-shadow:0 12px 26px rgba(244,97,61,.32)}
+.prof h2{font-size:20px;font-weight:700;margin-top:10px;letter-spacing:-.02em}
+.prof p{font-size:13.5px;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 10px;
+  text-align:center;box-shadow:var(--shadow)}
+.tile b{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em}
+.tile span{font-size:11.5px;color:var(--muted)}
+.rows{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);
+  border-radius:16px;padding:15px 16px;box-shadow:var(--shadow);width:100%;text-align:left;font-size:15px}
+.row .ri{width:34px;height:34px;border-radius:11px;flex:none;display:grid;place-items:center;
+  background:rgba(244,97,61,.12);color:var(--coral)}
+.row .rv{margin-left:auto;color:var(--muted);font-size:13.5px}
+
+/* ---------- таб-бар ---------- */
+.tabs{
+  position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-around;
+  padding:12px 20px calc(16px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(253,253,253,0),var(--surface) 38%);
+}
+.tab{width:44px;height:44px;display:grid;place-items:center;color:var(--muted);
+  transition:color .2s,transform .18s}
+.tab:active{transform:scale(.88)}
+.tab.on{color:var(--coral)}
+.tab.plus{width:52px;height:52px;border-radius:50%;background:var(--btn-bg);color:var(--btn-fg);
+  box-shadow:0 10px 22px rgba(20,21,24,.22)}
+.bar-home{width:120px;height:5px;border-radius:99px;background:var(--ink);opacity:.85;
+  margin:2px auto 6px;display:none}
+@media(min-width:540px){.bar-home{display:block}}
+
+/* ---------- шторка ---------- */
+.veil{position:absolute;inset:0;background:rgba(10,11,14,.42);opacity:0;visibility:hidden;
+  transition:opacity .3s ease,visibility .3s;backdrop-filter:blur(2px)}
+.veil.on{opacity:1;visibility:visible}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;background:var(--card);
+  border-radius:28px 28px 0 0;padding:10px 22px calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(102%);transition:transform .38s cubic-bezier(.25,.9,.28,1);
+  max-height:92%;overflow-y:auto;box-shadow:0 -10px 40px rgba(20,21,24,.16)
+}
+.sheet.on{transform:none}
+.grab{width:42px;height:4px;border-radius:99px;background:var(--track);margin:0 auto 18px}
+.sheet h2{font-size:19px;font-weight:700;letter-spacing:-.02em;margin-bottom:18px}
+.f{margin-bottom:16px}
+.f label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:7px;
+  letter-spacing:.04em;text-transform:uppercase}
+.f input[type="text"],.f input[type="time"],.f textarea{
+  width:100%;font:inherit;font-size:15.5px;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:14px;padding:13px 14px;outline:0;
+  transition:border-color .2s}
+.f input:focus,.f textarea:focus{border-color:var(--coral)}
+.f textarea{resize:vertical;min-height:74px;line-height:1.5}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:9px 15px;
+  font-size:13.5px;font-weight:600;color:var(--muted);transition:all .2s}
+.pill.on{background:var(--coral);border-color:var(--coral);color:#fff}
+.dots{display:flex;gap:10px}
+.dotc{width:30px;height:30px;border-radius:50%;position:relative;transition:transform .2s}
+.dotc:active{transform:scale(.88)}
+.dotc.on::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--ink)}
+.save{width:100%;background:var(--btn-bg);color:var(--btn-fg);border-radius:99px;padding:16px;
+  font-size:16px;font-weight:650;margin-top:6px;transition:transform .18s}
+.save:active{transform:scale(.97)}
+
+.toast{position:absolute;left:50%;top:52px;z-index:40;transform:translate(-50%,-14px) scale(.96);opacity:0;
+  background:rgba(23,24,28,.92);color:#fff;padding:10px 18px;border-radius:99px;backdrop-filter:blur(8px);
+  font-size:13.5px;font-weight:600;pointer-events:none;box-shadow:0 8px 24px rgba(20,21,24,.25);
+  transition:all .3s cubic-bezier(.2,.9,.3,1);white-space:nowrap;max-width:88%;overflow:hidden;text-overflow:ellipsis}
+:root[data-theme="dark"] .toast{background:rgba(241,242,246,.94);color:#17181c}
+.toast.on{opacity:1;transform:translate(-50%,0) scale(1)}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="app">
 
-  <header>
-    <div class="top">
-      <div>
-        <h1>Мой день в одной странице</h1>
-        <p class="date" id="today"></p>
-      </div>
-      <button class="icon-btn" id="theme" title="Сменить тему">🌙</button>
-    </div>
-
-    <div class="progress-card">
-      <div class="progress-head">
-        <b id="status">Хорошего дня!</b>
-        <span id="counter">0 из 0</span>
-      </div>
-      <div class="bar"><i id="fill"></i></div>
-    </div>
-  </header>
-
-  <form id="form">
-    <input type="time" id="time" title="Время">
-    <input type="text" id="text" placeholder="Что нужно сделать?" autocomplete="off" required>
-    <button class="add" type="submit">Добавить</button>
-  </form>
-
-  <div class="filters">
-    <button class="chip on" data-filter="all">Все</button>
-    <button class="chip" data-filter="active">Осталось</button>
-    <button class="chip" data-filter="done">Готово</button>
+  <div class="statusbar">
+    <span id="clock">9:41</span>
+    <span class="icons">
+      <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 4.2a10 10 0 0 1 14 0M3.6 7a6.3 6.3 0 0 1 8.8 0"/><circle cx="8" cy="10" r="1" fill="currentColor" stroke="none"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".7" y=".7" width="21" height="10.6" rx="3.2" stroke="currentColor" stroke-opacity=".4" stroke-width="1.1"/><rect x="2.3" y="2.3" width="17.8" height="7.4" rx="2" fill="currentColor"/><path d="M23.2 4.2v3.6c.9-.3 1.3-.9 1.3-1.8s-.4-1.5-1.3-1.8Z" fill="currentColor" fill-opacity=".45"/></svg>
+    </span>
   </div>
 
-  <div id="list"></div>
+  <div class="screens">
 
-  <footer>
-    <span class="hint">Двойной клик по задаче — изменить текст</span>
-    <button class="link" id="clear">Очистить выполненные</button>
-  </footer>
+    <!-- ================= ГЛАВНАЯ ================= -->
+    <section class="screen active" id="s-home">
+      <div class="head">
+        <h1 id="greet">Доброе утро</h1>
+        <button class="bell" id="bell" title="Ближайшая задача">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+      </div>
 
+      <div class="week" id="week"></div>
+
+      <div class="stat">
+        <div class="glow"></div>
+        <h2 id="statTitle">0 задач выполнено</h2>
+        <p id="statSub">Добавь первое дело на сегодня</p>
+        <div class="mini">
+          <i></i><i></i>
+          <div class="r"><b><svg viewBox="0 0 16 16"><polyline points="2,8.5 6,12.5 14,4"/></svg></b><s></s></div>
+          <div class="r o"><b></b><s></s></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <span id="secTitle">Начни свой день</span>
+        <button id="toggleView" title="Показать выполненные">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="7" rx="2.5"/><rect x="3" y="14" width="18" height="6" rx="2.5"/></svg>
+        </button>
+      </div>
+
+      <div class="tasks" id="list"></div>
+    </section>
+
+    <!-- ================= ФОКУС ================= -->
+    <section class="screen" id="s-focus">
+      <div class="chip">
+        <div class="ic">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 10v4M9.5 6.5v11M14.5 8.5v7M19 11v2"/></svg>
+        </div>
+        <div class="tx" id="chipText">Фокус · сегодня 0 м</div>
+        <button class="x" id="closeFocus" title="Назад">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="ftitle">
+        <h2 id="fTitle">Задача</h2>
+        <p id="fTime">13:15 – 13:45</p>
+      </div>
+
+      <div class="dial">
+        <svg viewBox="0 0 260 260">
+          <defs>
+            <linearGradient id="grad" x1="1" y1="0" x2="0.1" y2="1">
+              <stop offset="0%" stop-color="#ffa6c9"/>
+              <stop offset="45%" stop-color="#ff8a6e"/>
+              <stop offset="100%" stop-color="#f4613d"/>
+            </linearGradient>
+          </defs>
+          <circle class="track-c" cx="130" cy="130" r="104"/>
+          <circle class="prog" id="prog" cx="130" cy="130" r="104"/>
+          <g class="knob" id="knob"><circle cx="130" cy="26" r="11"/></g>
+        </svg>
+        <div class="mid">
+          <div class="time" id="fClock">30:00</div>
+          <button class="plus" id="plus15">+15</button>
+        </div>
+      </div>
+
+      <div class="subs" id="subs"></div>
+      <div class="addsub">
+        <div class="c"></div>
+        <input type="text" id="newSub" placeholder="Добавить подпункт" autocomplete="off">
+      </div>
+
+      <button class="bigbtn" id="playBtn">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.3v13.4c0 .8.9 1.3 1.6.9l10.2-6.7c.6-.4.6-1.4 0-1.8L9.6 4.4c-.7-.4-1.6 0-1.6.9Z"/></svg>
+        <span id="playText">Старт</span>
+      </button>
+      <div class="frow">
+        <button id="doneBtn">Завершить</button>
+        <button id="delBtn">Удалить</button>
+      </div>
+    </section>
+
+    <!-- ================= КАЛЕНДАРЬ ================= -->
+    <section class="screen" id="s-cal">
+      <div class="mhead">
+        <button id="prevM"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <h2 id="monthName">Сентябрь</h2>
+        <button id="nextM"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div class="grid" id="cal"></div>
+      <div class="sec" style="margin:26px 0 14px"><span id="calDayTitle">План на день</span></div>
+      <div class="tasks" id="calList"></div>
+    </section>
+
+    <!-- ================= ПРОФИЛЬ ================= -->
+    <section class="screen" id="s-prof">
+      <div class="prof">
+        <div class="ava" id="ava">Я</div>
+        <h2 id="pName">Мой день</h2>
+        <p>Планер на один экран</p>
+      </div>
+      <div class="tiles">
+        <div class="tile"><b id="tAll">0</b><span>задач сегодня</span></div>
+        <div class="tile"><b id="tDone">0</b><span>выполнено</span></div>
+        <div class="tile"><b id="tMin">0</b><span>минут в фокусе</span></div>
+      </div>
+      <div class="rows">
+        <button class="row" id="rName">
+          <span class="ri"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg></span>
+          Имя
+          <span class="rv" id="rNameVal">Мой день</span>
+        </button>
+        <button class="row" id="rTheme">
+          <span class="ri"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg></span>
+          Тема
+          <span class="rv" id="rThemeVal">Светлая</span>
+        </button>
+        <button class="row" id="rClear">
+          <span class="ri"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg></span>
+          Очистить этот день
+          <span class="rv" id="rClearVal"></span>
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ================= ТАБ-БАР ================= -->
+  <nav class="tabs">
+    <button class="tab on" data-go="home" title="Главная">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3.5 10.5 12 3.5l8.5 7v9a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-9Z"/></svg>
+    </button>
+    <button class="tab" data-go="cal" title="Календарь">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>
+    </button>
+    <button class="tab plus" id="openSheet" title="Новая задача">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button class="tab" data-go="focus" title="Таймер">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+    </button>
+    <button class="tab" data-go="prof" title="Профиль">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+    </button>
+  </nav>
+  <div class="bar-home"></div>
+
+  <!-- ================= ШТОРКА ================= -->
+  <div class="veil" id="veil"></div>
+  <div class="sheet" id="sheet">
+    <div class="grab"></div>
+    <h2>Новая задача</h2>
+    <form id="addForm">
+      <div class="f">
+        <label>Что сделать</label>
+        <input type="text" id="fName" placeholder="Например: Дизайн для соцсетей" autocomplete="off" required>
+      </div>
+      <div class="f">
+        <label>Начало</label>
+        <input type="time" id="fStart">
+      </div>
+      <div class="f">
+        <label>Сколько займёт</label>
+        <div class="pills" id="durs"></div>
+      </div>
+      <div class="f">
+        <label>Цвет</label>
+        <div class="dots" id="colors"></div>
+      </div>
+      <div class="f">
+        <label>Подпункты — по одному в строке</label>
+        <textarea id="fSubs" placeholder="Контент-план&#10;Мудборд&#10;Макеты"></textarea>
+      </div>
+      <button class="save" type="submit">Добавить в план</button>
+    </form>
+  </div>
+
+  <div class="toast" id="toast"></div>
 </div>
 
 <script>
 (function(){
-  const KEY = 'my-day-tasks';
-  const THEME_KEY = 'my-day-theme';
+'use strict';
 
-  let tasks = load();
-  let filter = 'all';
+/* ============ состояние ============ */
+const KEY = 'my-day-v2';
+const COLORS = ['#ff5f87','#5b9dff','#3ecf8e','#f4613d','#a78bfa'];
+const DURS = [15,25,30,45,60,90];
 
-  const $ = id => document.getElementById(id);
-  const listEl = $('list');
+const st = loadState();
+let view = { screen:'home', date: key(new Date()), focusId:null, showDone:true, calMonth:new Date() };
+let form = { dur:30, color:COLORS[0] };
+const timer = { on:false, left:0, total:0, last:0, raf:null };
 
-  /* ---------- Хранилище ---------- */
-  function load(){
-    try { return JSON.parse(localStorage.getItem(KEY)) || []; }
-    catch(e){ return []; }
+function loadState(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(KEY));
+    if (raw && raw.days) return raw;
+  }catch(e){}
+  return { days:{}, name:'Мой день', theme:null, focus:{} };
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
+
+function key(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function dayTasks(k){ return st.days[k] || (st.days[k] = []); }
+function tasksOf(k){ return st.days[k] || []; }
+const $ = id => document.getElementById(id);
+
+/* ============ утилиты ============ */
+function hhmm(min){
+  const h = Math.floor(min/60), m = min%60;
+  return (h?h+' ч ':'') + (m?m+' м':(h?'':'0 м'));
+}
+function addMin(t, n){
+  if(!t) return '';
+  const [h,m] = t.split(':').map(Number);
+  const x = (h*60+m+n) % 1440;
+  return String(Math.floor(x/60)).padStart(2,'0') + ':' + String(x%60).padStart(2,'0');
+}
+function mmss(sec){
+  sec = Math.max(0, Math.round(sec));
+  return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+}
+function byTime(a,b){ return (a.time||'99:99').localeCompare(b.time||'99:99'); }
+function findTask(id){
+  for (const k in st.days){
+    const t = st.days[k].find(x => x.id === id);
+    if (t) return { t, k };
   }
-  function save(){
-    try { localStorage.setItem(KEY, JSON.stringify(tasks)); } catch(e){}
-  }
+  return null;
+}
+let toastTimer;
+function toast(msg){
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('on'), 1900);
+}
 
-  /* ---------- Дата ---------- */
+/* ============ тема ============ */
+function applyTheme(){
+  const t = st.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', t);
+  document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#0b0c0f' : '#e9eaee';
+  $('rThemeVal').textContent = t === 'dark' ? 'Тёмная' : 'Светлая';
+  return t;
+}
+
+/* ============ часы в статус-баре ============ */
+function clock(){
   const d = new Date();
-  $('today').textContent = d.toLocaleDateString('ru-RU',
-    { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  $('clock').textContent = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+clock(); setInterval(clock, 15000);
 
-  /* ---------- Тема ---------- */
-  const themeBtn = $('theme');
-  function applyTheme(t){
-    document.documentElement.setAttribute('data-theme', t);
-    themeBtn.textContent = t === 'dark' ? '☀️' : '🌙';
+/* ============ навигация ============ */
+function go(screen){
+  if (screen === 'focus' && !view.focusId){
+    const next = tasksOf(view.date).filter(t => !t.done).sort(byTime)[0];
+    if (!next){ toast('Нет активных задач'); return; }
+    view.focusId = next.id;
   }
-  let theme = localStorage.getItem(THEME_KEY) ||
-    (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  applyTheme(theme);
-  themeBtn.onclick = () => {
-    theme = theme === 'dark' ? 'light' : 'dark';
-    localStorage.setItem(THEME_KEY, theme);
-    applyTheme(theme);
-  };
+  if (view.screen === 'focus' && screen !== 'focus') pause();
+  view.screen = screen;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $('s-' + screen).classList.add('active');
+  document.querySelectorAll('.tab[data-go]').forEach(b => b.classList.toggle('on', b.dataset.go === screen));
+  $('s-' + screen).scrollTop = 0;
+  if (screen === 'focus') paintFocus();
+  if (screen === 'cal') paintCal();
+  if (screen === 'prof') paintProf();
+}
+document.querySelectorAll('.tab[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
 
-  /* ---------- Группы по времени суток ---------- */
-  const GROUPS = [
-    { id:'morning', title:'🌅 Утро',        test:h => h !== null && h < 12 },
-    { id:'day',     title:'☀️ День',        test:h => h !== null && h >= 12 && h < 18 },
-    { id:'evening', title:'🌙 Вечер',       test:h => h !== null && h >= 18 },
-    { id:'any',     title:'📌 Без времени', test:h => h === null }
-  ];
-  const hourOf = t => t ? parseInt(t.slice(0,2), 10) : null;
+/* ============ главная ============ */
+const WD = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
+const MONTHS = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 
-  /* ---------- Отрисовка ---------- */
-  function render(){
-    const visible = tasks.filter(t =>
-      filter === 'all' ? true : filter === 'done' ? t.done : !t.done
-    ).sort((a,b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+function weekOf(d){
+  const x = new Date(d);
+  const shift = (x.getDay() + 6) % 7;
+  x.setDate(x.getDate() - shift);
+  x.setHours(0,0,0,0);
+  return Array.from({length:7}, (_,i) => { const c = new Date(x); c.setDate(x.getDate()+i); return c; });
+}
 
-    listEl.innerHTML = '';
+function paintWeek(){
+  const box = $('week');
+  box.innerHTML = '';
+  const tk = key(new Date());
+  weekOf(new Date(view.date + 'T12:00')).forEach(d => {
+    const k = key(d);
+    const b = document.createElement('button');
+    b.className = 'day' + (k === view.date ? ' on' : '') + (k === tk ? ' today' : '') +
+                  (tasksOf(k).length ? ' has' : '');
+    b.innerHTML = '<span class="dw">' + WD[(d.getDay()+6)%7] + '</span>' +
+                  '<span class="dn">' + d.getDate() + '</span><span class="dot"></span>';
+    b.onclick = () => { view.date = k; paintHome(); };
+    box.appendChild(b);
+  });
+}
 
-    if (!visible.length){
-      listEl.innerHTML = tasks.length
-        ? '<div class="empty"><div>🎉</div>Здесь пусто — всё по этому фильтру сделано</div>'
-        : '<div class="empty"><div>📝</div>План пока пуст. Добавь первое дело сверху</div>';
-      updateProgress();
+function greet(){
+  const h = new Date().getHours();
+  const g = h < 6 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
+  return g + (st.name && st.name !== 'Мой день' ? ', ' + st.name : '');
+}
+
+function taskCard(t, k){
+  const el = document.createElement('div');
+  el.className = 'task' + (t.done ? ' done' : '');
+  const bar = document.createElement('div');
+  bar.className = 'bar'; bar.style.background = t.color;
+  const body = document.createElement('div');
+  body.className = 'body';
+  const meta = (t.time ? t.time + ' – ' + addMin(t.time, t.dur) : 'без времени') + ' • ' + hhmm(t.dur);
+  body.innerHTML = '<h3></h3><div class="meta">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' +
+    '<span></span></div>';
+  body.querySelector('h3').textContent = t.title;
+  body.querySelector('.meta span').textContent = meta;
+
+  const btn = document.createElement('button');
+  if (t.done){
+    btn.className = 'go ok';
+    btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="4,12.5 9.5,18 20,6"/></svg>';
+  } else {
+    btn.className = 'go';
+    btn.textContent = 'Старт';
+  }
+  const open = () => { view.date = k; view.focusId = t.id; go('focus'); };
+  btn.onclick = e => { e.stopPropagation(); open(); };
+  el.onclick = open;
+
+  el.appendChild(bar); el.appendChild(body); el.appendChild(btn);
+  return el;
+}
+
+function paintHome(){
+  $('greet').textContent = greet();
+  paintWeek();
+
+  const list = tasksOf(view.date).slice().sort(byTime);
+  const done = list.filter(t => t.done).length;
+  const isToday = view.date === key(new Date());
+
+  $('statTitle').textContent = done + ' ' + plural(done, 'задача','задачи','задач') + ' ' +
+                               (done === 1 ? 'выполнена' : 'выполнено');
+  $('statSub').textContent = !list.length ? 'Добавь первое дело на этот день'
+    : done === list.length ? 'План на день закрыт полностью'
+    : 'Осталось ' + (list.length - done) + ' из ' + list.length;
+  $('secTitle').textContent = isToday ? 'Начни свой день' : dateLabel(view.date);
+  $('bell').classList.toggle('has', list.some(t => !t.done));
+  $('toggleView').classList.toggle('on', !view.showDone);
+
+  const box = $('list');
+  box.innerHTML = '';
+  const shown = view.showDone ? list : list.filter(t => !t.done);
+  if (!shown.length){
+    box.innerHTML = list.length
+      ? '<div class="empty"><b>🎉</b>Все задачи выполнены</div>'
+      : '<div class="empty"><b>🗓</b>Пусто. Нажми «+», чтобы<br>добавить первое дело</div>';
+  } else {
+    shown.forEach(t => box.appendChild(taskCard(t, view.date)));
+  }
+}
+
+function plural(n, a, b, c){
+  const m = n % 100, k = n % 10;
+  return m > 10 && m < 20 ? c : k === 1 ? a : k > 1 && k < 5 ? b : c;
+}
+function dateLabel(k){
+  const d = new Date(k + 'T12:00');
+  return d.toLocaleDateString('ru-RU', { day:'numeric', month:'long' });
+}
+
+$('toggleView').onclick = () => { view.showDone = !view.showDone; paintHome(); };
+$('bell').onclick = () => {
+  const next = tasksOf(view.date).filter(t => !t.done).sort(byTime)[0];
+  toast(next ? 'Дальше: ' + next.title : 'Активных задач нет');
+};
+
+/* ============ фокус ============ */
+const C = 2 * Math.PI * 104;
+$('prog').style.strokeDasharray = C;
+
+function focusTask(){ const f = findTask(view.focusId); return f ? f.t : null; }
+
+function paintFocus(){
+  const t = focusTask();
+  if (!t){ go('home'); return; }
+  $('fTitle').textContent = t.title;
+  $('fTime').textContent = t.time ? t.time + ' – ' + addMin(t.time, t.dur) : hhmm(t.dur) + ' без привязки ко времени';
+  $('chipText').innerHTML = 'Фокус <s>· сегодня ' + hhmm(Math.round((st.focus[view.date]||0)/60)) + '</s>';
+
+  if (!timer.on){
+    timer.total = t.dur * 60;
+    timer.left = Math.max(0, timer.total - (t.spent || 0));
+    if (timer.left === 0) timer.left = timer.total;
+  }
+  paintDial();
+  paintSubs(t);
+  $('playText').textContent = timer.on ? 'Пауза' : (t.spent ? 'Продолжить' : 'Старт');
+  $('playIcon').innerHTML = timer.on
+    ? '<rect x="7" y="5" width="3.6" height="14" rx="1.4"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.4"/>'
+    : '<path d="M8 5.3v13.4c0 .8.9 1.3 1.6.9l10.2-6.7c.6-.4.6-1.4 0-1.8L9.6 4.4c-.7-.4-1.6 0-1.6.9Z"/>';
+  $('doneBtn').textContent = t.done ? 'Вернуть в работу' : 'Завершить';
+}
+
+function paintDial(){
+  const p = timer.total ? Math.max(0, Math.min(1, timer.left / timer.total)) : 0;
+  $('prog').style.strokeDashoffset = C * (1 - p);
+  $('knob').style.transform = 'rotate(' + (p * 360) + 'deg)';
+  $('fClock').textContent = mmss(timer.left);
+}
+
+function paintSubs(t){
+  const box = $('subs');
+  box.innerHTML = '';
+  (t.subs || []).forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'sub' + (s.done ? ' on' : '');
+    el.innerHTML = '<div class="c"><svg viewBox="0 0 16 16"><polyline points="2,8.5 6,12.5 14,4"/></svg></div>' +
+                   '<span></span><button class="rm" title="Убрать">&times;</button>';
+    el.querySelector('span').textContent = s.t;
+    el.onclick = () => { s.done = !s.done; save(); paintSubs(t); };
+    el.querySelector('.rm').onclick = e => {
+      e.stopPropagation(); t.subs.splice(i,1); save(); paintSubs(t);
+    };
+    box.appendChild(el);
+  });
+}
+
+function tickStart(){
+  timer.last = Date.now();
+  cancelAnimationFrame(timer.raf);
+  const step = () => {
+    if (!timer.on) return;
+    const now = Date.now();
+    const d = (now - timer.last) / 1000;
+    timer.last = now;
+    timer.left -= d;
+    const t = focusTask();
+    if (t){
+      t.spent = (t.spent || 0) + d;
+      st.focus[view.date] = (st.focus[view.date] || 0) + d;
+    }
+    if (timer.left <= 0){
+      timer.left = 0;
+      paintDial();
+      pause(); save();
+      finish(true);
       return;
     }
-
-    GROUPS.forEach(g => {
-      const items = visible.filter(t => g.test(hourOf(t.time)));
-      if (!items.length) return;
-
-      const title = document.createElement('div');
-      title.className = 'group-title';
-      title.textContent = g.title;
-      listEl.appendChild(title);
-
-      const ul = document.createElement('ul');
-      items.forEach(t => ul.appendChild(row(t)));
-      listEl.appendChild(ul);
-    });
-
-    updateProgress();
-  }
-
-  function row(t){
-    const li = document.createElement('li');
-    li.className = t.done ? 'done' : '';
-
-    const check = document.createElement('button');
-    check.className = 'check';
-    check.title = 'Отметить';
-    check.innerHTML = '<svg viewBox="0 0 16 16"><polyline points="2,8.5 6,12.5 14,4"/></svg>';
-    check.onclick = () => toggle(t.id);
-    li.appendChild(check);
-
-    if (t.time){
-      const time = document.createElement('span');
-      time.className = 'time';
-      time.textContent = t.time;
-      li.appendChild(time);
-    }
-
-    const text = document.createElement('div');
-    text.className = 'text';
-    text.textContent = t.text;
-    text.ondblclick = () => {
-      text.contentEditable = 'true';
-      text.focus();
-      getSelection().selectAllChildren(text);
-    };
-    text.onblur = () => {
-      text.contentEditable = 'false';
-      const val = text.textContent.trim();
-      if (val) { t.text = val; save(); }
-      else { text.textContent = t.text; }
-    };
-    text.onkeydown = e => {
-      if (e.key === 'Enter'){ e.preventDefault(); text.blur(); }
-      if (e.key === 'Escape'){ text.textContent = t.text; text.blur(); }
-    };
-    li.appendChild(text);
-
-    const del = document.createElement('button');
-    del.className = 'del';
-    del.title = 'Удалить';
-    del.innerHTML = '&times;';
-    del.onclick = () => remove(t.id, li);
-    li.appendChild(del);
-
-    return li;
-  }
-
-  function updateProgress(){
-    const total = tasks.length;
-    const done = tasks.filter(t => t.done).length;
-    const pct = total ? Math.round(done / total * 100) : 0;
-
-    $('fill').style.width = pct + '%';
-    $('counter').textContent = done + ' из ' + total;
-    $('status').textContent =
-      !total ? 'Хорошего дня!' :
-      pct === 100 ? 'День закрыт полностью 🎉' :
-      pct >= 50 ? 'Больше половины позади' :
-      'Выполнено ' + pct + '%';
-  }
-
-  /* ---------- Действия ---------- */
-  function toggle(id){
-    const t = tasks.find(x => x.id === id);
-    if (!t) return;
-    t.done = !t.done;
-    save();
-    render();
-  }
-
-  function remove(id, li){
-    li.classList.add('leaving');
-    setTimeout(() => {
-      tasks = tasks.filter(x => x.id !== id);
-      save();
-      render();
-    }, 200);
-  }
-
-  $('form').onsubmit = e => {
-    e.preventDefault();
-    const text = $('text').value.trim();
-    if (!text) return;
-    tasks.push({ id: Date.now() + '' + Math.random(), text, time: $('time').value, done:false });
-    save();
-    $('text').value = '';
-    $('time').value = '';
-    $('text').focus();
-    render();
+    paintDial();
+    timer.raf = requestAnimationFrame(step);
   };
+  timer.raf = requestAnimationFrame(step);
+}
 
-  document.querySelectorAll('.chip').forEach(chip => {
-    chip.onclick = () => {
-      document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
-      chip.classList.add('on');
-      filter = chip.dataset.filter;
-      render();
-    };
+function play(){
+  const t = focusTask();
+  if (!t) return;
+  if (t.done){ toast('Задача уже выполнена'); return; }
+  timer.on = true;
+  $('prog').style.transition = 'none';
+  tickStart();
+  paintFocus();
+}
+function pause(){
+  if (!timer.on) return;
+  timer.on = false;
+  cancelAnimationFrame(timer.raf);
+  save();
+  if (view.screen === 'focus') paintFocus();
+}
+function finish(auto){
+  const f = findTask(view.focusId);
+  if (!f) return;
+  pause();
+  f.t.done = !f.t.done;
+  if (f.t.done) (f.t.subs || []).forEach(s => s.done = true);
+  save();
+  toast(f.t.done ? (auto ? 'Время вышло — задача закрыта' : 'Задача выполнена') : 'Задача снова в работе');
+  paintHome();
+  if (f.t.done) go('home'); else paintFocus();
+}
+
+$('playBtn').onclick = () => timer.on ? pause() : play();
+$('doneBtn').onclick = () => finish(false);
+$('delBtn').onclick = () => {
+  const f = findTask(view.focusId);
+  if (!f) return;
+  if (!confirm('Удалить «' + f.t.title + '»?')) return;
+  pause();
+  st.days[f.k] = st.days[f.k].filter(x => x.id !== f.t.id);
+  view.focusId = null; save(); paintHome(); go('home');
+  toast('Задача удалена');
+};
+$('plus15').onclick = () => {
+  const t = focusTask();
+  if (!t) return;
+  t.dur += 15; timer.total += 15*60; timer.left += 15*60;
+  save(); paintFocus(); paintHome();
+  toast('Добавили 15 минут');
+};
+$('closeFocus').onclick = () => go('home');
+$('newSub').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const t = focusTask();
+  const v = e.target.value.trim();
+  if (!t || !v) return;
+  (t.subs = t.subs || []).push({ t:v, done:false });
+  e.target.value = '';
+  save(); paintSubs(t);
+});
+
+/* ============ календарь ============ */
+function paintCal(){
+  const m = view.calMonth;
+  $('monthName').textContent = MONTHS[m.getMonth()] + ' ' + m.getFullYear();
+  const box = $('cal');
+  box.innerHTML = '';
+  WD.forEach(w => { const e = document.createElement('div'); e.className = 'wd'; e.textContent = w; box.appendChild(e); });
+
+  const first = new Date(m.getFullYear(), m.getMonth(), 1);
+  const pad = (first.getDay() + 6) % 7;
+  const days = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate();
+  const tk = key(new Date());
+
+  for (let i = 0; i < pad; i++){
+    const e = document.createElement('div'); e.className = 'cell void'; box.appendChild(e);
+  }
+  for (let d = 1; d <= days; d++){
+    const k = key(new Date(m.getFullYear(), m.getMonth(), d));
+    const b = document.createElement('button');
+    b.className = 'cell' + (k === view.date ? ' on' : '') + (k === tk ? ' tdy' : '') +
+                  (tasksOf(k).length ? ' has' : '');
+    b.innerHTML = d + '<u></u>';
+    b.onclick = () => { view.date = k; paintHome(); paintCal(); };
+    box.appendChild(b);
+  }
+
+  $('calDayTitle').textContent = dateLabel(view.date);
+  const list = $('calList');
+  list.innerHTML = '';
+  const arr = tasksOf(view.date).slice().sort(byTime);
+  if (!arr.length) list.innerHTML = '<div class="empty"><b>🫧</b>На этот день ничего не запланировано</div>';
+  else arr.forEach(t => list.appendChild(taskCard(t, view.date)));
+}
+$('prevM').onclick = () => { view.calMonth = new Date(view.calMonth.getFullYear(), view.calMonth.getMonth()-1, 1); paintCal(); };
+$('nextM').onclick = () => { view.calMonth = new Date(view.calMonth.getFullYear(), view.calMonth.getMonth()+1, 1); paintCal(); };
+
+/* ============ профиль ============ */
+function paintProf(){
+  const list = tasksOf(view.date);
+  $('tAll').textContent = list.length;
+  $('tDone').textContent = list.filter(t => t.done).length;
+  $('tMin').textContent = Math.round((st.focus[view.date] || 0) / 60);
+  $('pName').textContent = st.name;
+  $('rNameVal').textContent = st.name;
+  $('ava').textContent = (st.name.trim()[0] || 'Я').toUpperCase();
+  $('rClearVal').textContent = dateLabel(view.date);
+  applyTheme();
+}
+$('rName').onclick = () => {
+  const v = prompt('Как тебя зовут?', st.name);
+  if (v === null) return;
+  st.name = v.trim() || 'Мой день';
+  save(); paintProf(); paintHome();
+};
+$('rTheme').onclick = () => {
+  st.theme = applyTheme() === 'dark' ? 'light' : 'dark';
+  save(); applyTheme();
+};
+$('rClear').onclick = () => {
+  if (!tasksOf(view.date).length){ toast('Здесь и так пусто'); return; }
+  if (!confirm('Удалить все задачи за ' + dateLabel(view.date) + '?')) return;
+  st.days[view.date] = [];
+  st.focus[view.date] = 0;
+  save(); paintHome(); paintProf();
+  toast('День очищен');
+};
+
+/* ============ шторка «новая задача» ============ */
+function sheet(open){
+  $('sheet').classList.toggle('on', open);
+  $('veil').classList.toggle('on', open);
+  if (open) setTimeout(() => $('fName').focus(), 320);
+}
+$('openSheet').onclick = () => {
+  $('fStart').value = suggestTime();
+  sheet(true);
+};
+$('veil').onclick = () => sheet(false);
+
+function suggestTime(){
+  const list = tasksOf(view.date).slice().sort(byTime).filter(t => t.time);
+  if (list.length){
+    const last = list[list.length-1];
+    return addMin(last.time, last.dur);
+  }
+  const d = new Date();
+  const m = Math.ceil((d.getHours()*60 + d.getMinutes() + 5) / 15) * 15;
+  return String(Math.floor(m/60) % 24).padStart(2,'0') + ':' + String(m%60).padStart(2,'0');
+}
+
+DURS.forEach(d => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'pill' + (d === form.dur ? ' on' : '');
+  b.textContent = d + ' м';
+  b.onclick = () => {
+    form.dur = d;
+    $('durs').querySelectorAll('.pill').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+  };
+  $('durs').appendChild(b);
+});
+COLORS.forEach(c => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'dotc' + (c === form.color ? ' on' : '');
+  b.style.background = c;
+  b.onclick = () => {
+    form.color = c;
+    $('colors').querySelectorAll('.dotc').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+  };
+  $('colors').appendChild(b);
+});
+
+$('addForm').onsubmit = e => {
+  e.preventDefault();
+  const title = $('fName').value.trim();
+  if (!title) return;
+  const subs = $('fSubs').value.split('\n').map(s => s.trim()).filter(Boolean).map(t => ({ t, done:false }));
+  dayTasks(view.date).push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+    title, time: $('fStart').value, dur: form.dur, color: form.color,
+    done:false, spent:0, subs
   });
+  save();
+  $('fName').value = ''; $('fSubs').value = '';
+  sheet(false);
+  paintHome();
+  toast('Добавлено в план');
+};
 
-  $('clear').onclick = () => {
-    if (!tasks.some(t => t.done)) return;
-    if (!confirm('Удалить все выполненные задачи?')) return;
-    tasks = tasks.filter(t => !t.done);
-    save();
-    render();
-  };
+/* ============ первый запуск ============ */
+if (!Object.keys(st.days).length){
+  const k = key(new Date());
+  st.days[k] = [
+    { id:'demo1', title:'Дыхательная практика', time:'08:00', dur:15, color:COLORS[0], done:false, spent:0, subs:[] },
+    { id:'demo2', title:'Дизайн для соцсетей', time:'13:15', dur:30, color:COLORS[1], done:false, spent:0,
+      subs:[{t:'Контент-план',done:false},{t:'Мудборд',done:false},{t:'Макеты в Instagram',done:false}] },
+    { id:'demo3', title:'План на неделю', time:'18:30', dur:30, color:COLORS[2], done:false, spent:0, subs:[] }
+  ];
+  st.focus[k] = 0;
+  save();
+}
 
-  render();
+applyTheme();
+paintHome();
 })();
 </script>
 </body>
